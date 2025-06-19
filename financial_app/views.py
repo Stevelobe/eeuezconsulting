@@ -6,6 +6,9 @@ from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth import login, logout # Import specific login/logout functions
 from django.contrib.auth.forms import AuthenticationForm # Django's built-in login form
+from django.http import JsonResponse # Import JsonResponse for AJAX replies
+from django.views.decorators.http import require_POST # For enforcing POST requests on AJAX views
+import json # For parsing JSON from request body
 
 from .models import Income, Expense, Project, Recommendation, EducationModule
 from .forms import IncomeForm, ExpenseForm, ProjectForm, CustomUserCreationForm # Import your forms
@@ -62,19 +65,55 @@ def dashboard_view(request):
     """
     Displays the user's financial dashboard with summary, recent entries, projects, and recommendations.
     """
+    # Fetch recent items
     user_incomes = Income.objects.filter(user=request.user).order_by('-date')[:5]
     user_expenses = Expense.objects.filter(user=request.user).order_by('-date')[:5]
-    user_projects = Project.objects.filter(user=request.user, is_completed=False).order_by('due_date')[:3]
     user_recommendations = Recommendation.objects.filter(user=request.user, is_read=False).order_by('-date_created')[:3]
-
+    
+    # Calculate financial summaries
     total_income = Income.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = Expense.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
     net_balance = total_income - total_expense
 
+    # --- Prepare Project Data for Dashboard ---
+    # 1. Projects for the main 'Your Projects' table (uncompleted projects)
+    user_projects_display = Project.objects.filter(user=request.user, is_completed=False).order_by('due_date')
+
+    # 2. Projects for JavaScript (all projects, converted to JSON-serializable list of dicts)
+    # This data will be used by the JavaScript for client-side logic like sorting for 'Most Valuable Projects'.
+    all_user_projects_queryset = Project.objects.filter(user=request.user).order_by('due_date')
+    projects_json_data = []
+    for project in all_user_projects_queryset:
+        projects_json_data.append({
+            'id': project.id,
+            'name': project.name,
+            # Ensure amounts are floats for JS operations
+            'target_amount': float(project.target_amount) if project.target_amount is not None else 0.0,
+            'current_amount': float(project.current_amount) if project.current_amount is not None else 0.0,
+            'is_completed': project.is_completed,
+            'due_date': project.due_date.strftime('%Y-%m-%d') if project.due_date else None
+        })
+
+    # 3. Most Valuable Projects for direct template rendering (top 3 by target_amount, can include completed)
+    most_valuable_projects_queryset = Project.objects.filter(user=request.user).order_by('-target_amount')[:3]
+    most_valuable_projects_for_template = []
+    for project in most_valuable_projects_queryset:
+        most_valuable_projects_for_template.append({
+            'id': project.id,
+            'name': project.name,
+            'target_amount': float(project.target_amount) if project.target_amount is not None else 0.0,
+            'current_amount': float(project.current_amount) if project.current_amount is not None else 0.0,
+            'is_completed': project.is_completed,
+            'due_date': project.due_date.strftime('%Y-%m-%d') if project.due_date else None
+        })
+
+
     context = {
         'user_incomes': user_incomes,
         'user_expenses': user_expenses,
-        'user_projects': user_projects,
+        'user_projects': user_projects_display, # This is for the Django loop for the main table
+        'projects_json_data': projects_json_data, # This is for the json_script tag
+        'most_valuable_projects': most_valuable_projects_for_template, # This is for the specific section
         'user_recommendations': user_recommendations,
         'total_income': total_income,
         'total_expense': total_expense,
@@ -82,7 +121,49 @@ def dashboard_view(request):
     }
     return render(request, 'financial_app/dashboard.html', context)
 
-# --- Income Views ---
+# --- AJAX View to Complete a Project ---
+@login_required
+@require_POST # Ensure only POST requests are allowed
+def complete_project(request):
+    try:
+        data = json.loads(request.body)
+        project_id = data.get('project_id')
+        
+        if not project_id:
+            return JsonResponse({'success': False, 'error': 'Project ID is required.'}, status=400)
+
+        project = get_object_or_404(Project, pk=project_id, user=request.user)
+        
+        # Mark project as completed
+        project.is_completed = True
+        project.save()
+
+        # Create an Income entry from the project's target/current amount
+        # Decide whether to use target_amount or current_amount for income
+        amount_to_add = project.target_amount if project.target_amount is not None else project.current_amount
+        if amount_to_add is None: # Fallback if both are None
+            amount_to_add = 0
+
+        # Create an Income instance
+        Income.objects.create(
+            user=request.user,
+            amount=amount_to_add,
+            source=f"Project Completion: {project.name}",
+            date=project.due_date if project.due_date else Income.objects.latest('date').date # Use due date or latest income date as fallback
+        )
+        
+        return JsonResponse({'success': True, 'message': f'Project "{project.name}" completed and income updated.'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON in request body.'}, status=400)
+    except Project.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Project not found or not authorized.'}, status=404)
+    except Exception as e:
+        # Catch any other unexpected errors
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# --- Income Views (rest of your views remain the same) ---
 
 @login_required
 def income_list(request):
@@ -186,7 +267,7 @@ def delete_expense(request, pk):
         return redirect('expense_list')
     return render(request, 'financial_app/confirm_delete.html', {'object': expense, 'title': 'Delete Expense'})
 
-# --- Project Views ---
+# --- Project Views (rest of your views remain the same) ---
 
 @login_required
 def project_list(request):
@@ -243,8 +324,6 @@ def delete_project(request, pk):
 @login_required
 def recommendations_list(request):
     """Displays a list of financial recommendations for the user."""
-    # For demonstration, we'll get all recommendations. In a real app,
-    # you might filter by relevancy, unread status, etc.
     recommendations = Recommendation.objects.filter(user=request.user).order_by('-date_created')
     context = {'recommendations': recommendations, 'title': 'Financial Recommendations'}
     return render(request, 'financial_app/recommendations_list.html', context)
@@ -252,7 +331,6 @@ def recommendations_list(request):
 @login_required
 def education_modules_list(request):
     """Displays a list of financial education modules."""
-    # In a real scenario, this might fetch from EHBLO API
     education_modules = EducationModule.objects.all().order_by('-date_published')
     context = {'education_modules': education_modules, 'title': 'Financial Education'}
     return render(request, 'financial_app/education_modules_list.html', context)

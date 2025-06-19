@@ -27,7 +27,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="py-3 px-4 whitespace-nowrap text-gray-800">{{ expense.date|date:"M d, Y" }}</td>
                             <td class="py-3 px-4 whitespace-nowrap text-gray-800 font-medium">{{ expense.category }}</td>
-                            <td class="py-3 px-4 whitespace-nowrap text-red-600 font-bold">${{ expense.amount|floatformat:2 }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-red-600 font-bold">FCFA{{ expense.amount|floatformat:2 }}</td>
                             <td class="py-3 px-4 whitespace-nowrap text-sm">
                                 <a href="{% url 'edit_expense' expense.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
                                 <a href="{% url 'delete_expense' expense.pk %}" class="text-red-600 hover:text-red-900">Delete</a>

@@ -1,40 +1,95 @@
 <!-- eeuezconsulting_app/financial_app/templates/financial_app/dashboard.html -->
 {% extends 'base.html' %}
+{% load static %} {# Added for completeness, good practice in any template #}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2 class="text-4xl font-extrabold text-gray-900 mb-8 text-center text-gradient">Your Financial Overview</h2>
+<h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center text-gradient">Your Financial Overview</h2>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div class="card text-center">
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">Total Income</h3>
-        <p class="text-4xl font-bold text-green-600">FCFA{{ total_income|floatformat:2 }}</p>
+        <h3 class="text-lg md:text-xl font-semibold text-gray-700 mb-2">Total Income</h3>
+        <p id="totalIncomeDisplay" class="text-3xl md:text-4xl font-bold text-green-600">FCFA{{ total_income|floatformat:2 }}</p>
     </div>
     <div class="card text-center">
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">Total Expenses</h3>
-        <p class="text-4xl font-bold text-red-600">FCFA{{ total_expense|floatformat:2 }}</p>
+        <h3 class="text-lg md:text-xl font-semibold text-gray-700 mb-2">Total Expenses</h3>
+        <p id="totalExpensesDisplay" class="text-3xl md:text-4xl font-bold text-red-600">FCFA{{ total_expense|floatformat:2 }}</p>
     </div>
     <div class="card text-center">
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">Net Balance</h3>
-        <p class="text-4xl font-bold {% if net_balance >= 0 %}text-blue-600{% else %}text-red-600{% endif %}">FCFA{{ net_balance|floatformat:2 }}</p>
+        <h3 class="text-lg md:text-xl font-semibold text-gray-700 mb-2">Net Balance</h3>
+        <p id="netBalanceDisplay" class="text-3xl md:text-4xl font-bold {% if net_balance >= 0 %}text-blue-600{% else %}text-red-600{% endif %}">FCFA{{ net_balance|floatformat:2 }}</p>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Graphs Section -->
+    <div class="card col-span-1 lg:col-span-2">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Financial Trends</h3>
+        <div class="flex justify-center space-x-4 mb-6">
+            <button class="tab-button btn-primary py-2 px-4 text-sm" data-timescale="daily">Daily</button>
+            <button class="tab-button btn-secondary py-2 px-4 text-sm" data-timescale="monthly">Monthly</button>
+            <button class="tab-button btn-secondary py-2 px-4 text-sm" data-timescale="yearly">Yearly</button>
+        </div>
+        <div class="chart-container relative h-64 md:h-80 lg:h-96 w-full">
+            <canvas id="financialChartDaily" class="absolute inset-0 w-full h-full"></canvas>
+            <canvas id="financialChartMonthly" class="absolute inset-0 w-full h-full hidden"></canvas>
+            <canvas id="financialChartYearly" class="absolute inset-0 w-full h-full hidden"></canvas>
+        </div>
+    </div>
+
+    <!-- Most Valuable Projects Card -->
+    <div class="card col-span-1 lg:col-span-2">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Most Valuable Projects
+            <a href="{% url 'project_list' %}" class="btn-primary py-2 px-4 text-sm">View All</a>
+        </h3>
+        {% comment %}
+        The 'most_valuable_projects' context variable should be passed from your Django view,
+        e.g., by sorting user_projects by target_amount and slicing the top N.
+        For example, in your views.py:
+        from .models import Project # Assuming your Project model
+        def dashboard_view(request):
+            user_projects = Project.objects.filter(user=request.user).order_by('-target_amount')
+            most_valuable_projects = user_projects[:3]
+            context = {
+                # ... other context variables ...
+                'most_valuable_projects': most_valuable_projects,
+            }
+            return render(request, 'financial_app/dashboard.html', context)
+        {% endcomment %}
+        {% if most_valuable_projects %}
+            <ul class="space-y-3">
+                {% for project in most_valuable_projects %}
+                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-300">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">{{ project.name }}</p>
+                            <p class="text-sm text-gray-600">Target: FCFA{{ project.target_amount|floatformat:2 }}</p>
+                        </div>
+                        <span class="text-blue-600 font-bold">FCFA{{ project.current_amount|floatformat:2 }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600">No projects to display as most valuable. <a href="{% url 'add_project' %}" class="text-purple-600 hover:underline">Add one!</a></p>
+        {% endif %}
+    </div>
+
+
     <!-- Recent Incomes Card -->
     <div class="card">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex flex-col sm:flex-row justify-between items-center sm:space-x-4"> {# Added flex-col for mobile, flex-row for sm+ #}
             Recent Incomes
-            <a href="{% url 'add_income' %}" class="btn-primary py-2 px-4 text-sm">Add Income</a>
+            <a href="{% url 'add_income' %}" class="btn-primary py-2 px-4 text-sm mt-3 sm:mt-0">Add Income</a> {# Added mt-3 for mobile button spacing #}
         </h3>
         {% if user_incomes %}
             <ul class="space-y-3">
                 {% for income in user_incomes %}
-                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-200">
+                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-300"> {# Adjusted border color for light theme #}
                         <div class="flex-1">
-                            <p class="font-medium text-gray-700">{{ income.source }}</p>
-                            <p class="text-sm text-gray-500">{{ income.date|date:"M d, Y" }}</p>
+                            <p class="font-medium text-gray-800">{{ income.source }}</p> {# Adjusted text color #}
+                            <p class="text-sm text-gray-600">{{ income.date|date:"M d, Y" }}</p> {# Adjusted text color #}
                         </div>
                         <span class="text-green-600 font-bold">FCFA{{ income.amount|floatformat:2 }}</span>
                     </li>
@@ -44,23 +99,23 @@
                 <a href="{% url 'income_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Incomes &rarr;</a>
             </div>
         {% else %}
-            <p class="text-gray-500">No recent incomes recorded. <a href="{% url 'add_income' %}" class="text-purple-600 hover:underline">Add one now!</a></p>
+            <p class="text-gray-600">No recent incomes recorded. <a href="{% url 'add_income' %}" class="text-purple-600 hover:underline">Add one now!</a></p> {# Adjusted text color #}
         {% endif %}
     </div>
 
     <!-- Recent Expenses Card -->
     <div class="card">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex flex-col sm:flex-row justify-between items-center sm:space-x-4"> {# Added flex-col for mobile, flex-row for sm+ #}
             Recent Expenses
-            <a href="{% url 'add_expense' %}" class="btn-primary py-2 px-4 text-sm">Add Expense</a>
+            <a href="{% url 'add_expense' %}" class="btn-primary py-2 px-4 text-sm mt-3 sm:mt-0">Add Expense</a> {# Added mt-3 for mobile button spacing #}
         </h3>
         {% if user_expenses %}
             <ul class="space-y-3">
                 {% for expense in user_expenses %}
-                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-200">
+                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-300">
                         <div class="flex-1">
-                            <p class="font-medium text-gray-700">{{ expense.category }}</p>
-                            <p class="text-sm text-gray-500">{{ expense.date|date:"M d, Y" }}</p>
+                            <p class="font-medium text-gray-800">{{ expense.category }}</p> {# Adjusted text color #}
+                            <p class="text-sm text-gray-600">{{ expense.date|date:"M d, Y" }}</p> {# Adjusted text color #}
                         </div>
                         <span class="text-red-600 font-bold">FCFA{{ expense.amount|floatformat:2 }}</span>
                     </li>
@@ -70,34 +125,38 @@
                 <a href="{% url 'expense_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Expenses &rarr;</a>
             </div>
         {% else %}
-            <p class="text-gray-500">No recent expenses recorded. <a href="{% url 'add_expense' %}" class="text-purple-600 hover:underline">Add one now!</a></p>
+            <p class="text-gray-600">No recent expenses recorded. <a href="{% url 'add_expense' %}" class="text-purple-600 hover:underline">Add one now!</a></p>
         {% endif %}
     </div>
 
-    <!-- Upcoming Projects Card -->
+    <!-- Your Projects Card (with Complete button) -->
     <div class="card col-span-1 lg:col-span-2">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex flex-col sm:flex-row justify-between items-center sm:space-x-4"> {# Added flex-col for mobile, flex-row for sm+ #}
             Your Projects
-            <a href="{% url 'add_project' %}" class="btn-primary py-2 px-4 text-sm">Add Project</a>
+            <a href="{% url 'add_project' %}" class="btn-primary py-2 px-4 text-sm mt-3 sm:mt-0">Add Project</a> {# Added mt-3 for mobile button spacing #}
         </h3>
         {% if user_projects %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded-lg shadow-sm">
-                    <thead class="bg-gray-100">
+            <div class="overflow-x-auto"> {# Ensures horizontal scrolling for table on small screens #}
+                <table class="min-w-full bg-white rounded-lg shadow-sm" id="projectsTable">
+                    <thead class="bg-gray-100"> {# Lighter table header background for light theme #}
                         <tr>
                             <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tl-lg">Project Name</th>
                             <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Due Date</th>
                             <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Target Amount</th>
-                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tr-lg">Current Amount</th>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Current Amount</th>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tr-lg">Actions</th> {# NEW TH for Actions #}
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200"> {# Adjusted divider color #}
                         {% for project in user_projects %}
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-50 project-row" data-project-id="{{ project.id }}" data-project-name="{{ project.name }}" data-project-amount="{{ project.target_amount|default:project.current_amount|floatformat:2 }}">
                                 <td class="py-3 px-4 whitespace-nowrap text-gray-800 font-medium">{{ project.name }}</td>
-                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">{{ project.due_date|default:"N/A"|date:"M d, Y" }}</td>
-                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">FCFA{{ project.target_amount|floatformat:2|default:"N/A" }}</td>
-                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">FCFA{{ project.current_amount|floatformat:2 }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-gray-700">{{ project.due_date|default:"N/A"|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-blue-600">FCFA{{ project.target_amount|floatformat:2|default:"N/A" }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-green-600">FCFA{{ project.current_amount|floatformat:2 }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    <button class="btn-primary py-1 px-3 text-xs complete-project-btn">Complete</button> {# Complete button #}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -107,66 +166,351 @@
                 <a href="{% url 'project_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Projects &rarr;</a>
             </div>
         {% else %}
-            <p class="text-gray-500">No upcoming projects. <a href="{% url 'add_project' %}" class="text-purple-600 hover:underline">Start a new project!</a></p>
+            <p class="text-gray-600">No upcoming projects. <a href="{% url 'add_project' %}" class="text-purple-600 hover:underline">Start a new project!</a></p>
         {% endif %}
     </div>
 
     <!-- Recent Recommendations Card -->
     <div class="card col-span-1 lg:col-span-2">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex flex-col sm:flex-row justify-between items-center sm:space-x-4"> {# Added flex-col for mobile, flex-row for sm+ #}
             Latest Recommendations
-            <a href="{% url 'recommendations_list' %}" class="btn-primary py-2 px-4 text-sm">View All</a>
+            <a href="{% url 'recommendations_list' %}" class="btn-primary py-2 px-4 text-sm mt-3 sm:mt-0">View All</a> {# Added mt-3 for mobile button spacing #}
         </h3>
         {% if user_recommendations %}
             <ul class="space-y-4">
                 {% for rec in user_recommendations %}
-                    <li class="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-1">{{ rec.title }}</h4>
-                        <p class="text-gray-600 text-sm mb-2">{{ rec.content|truncatechars:150 }}</p>
-                        <p class="text-xs text-gray-500">Issued: {{ rec.date_created|date:"M d, Y" }}</p>
+                    <li class="p-4 bg-gray-100 rounded-lg shadow-sm border border-gray-300"> {# Adjusted background and border for light theme #}
+                        <h4 class="text-lg font-semibold text-gray-800 mb-1">{{ rec.title }}</h4> {# Adjusted text color #}
+                        <p class="text-gray-600 text-sm mb-2">{{ rec.content|truncatechars:150 }}</p> {# Adjusted text color #}
+                        <p class="text-xs text-gray-500">Issued: {{ rec.date_created|date:"M d, Y" }}</p> {# Adjusted text color #}
                         <a href="{% url 'recommendations_list' %}" class="text-blue-600 hover:underline text-sm mt-2 inline-block">Read More</a>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="text-gray-500">No new recommendations at the moment. Good job!</p>
+            <p class="text-gray-600">No new recommendations at the moment. Good job!</p> {# Adjusted text color #}
         {% endif %}
     </div>
 
     <!-- Financial Education Modules Card -->
     <div class="card col-span-1 lg:col-span-2">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex flex-col sm:flex-row justify-between items-center sm:space-x-4"> {# Added flex-col for mobile, flex-row for sm+ #}
             Financial Education Modules
-            <a href="{% url 'education_modules_list' %}" class="btn-primary py-2 px-4 text-sm">View All</a>
+            <a href="{% url 'education_modules_list' %}" class="btn-primary py-2 px-4 text-sm mt-3 sm:mt-0">View All</a> {# Added mt-3 for mobile button spacing #}
         </h3>
         <p class="text-gray-600 mb-4">
             Explore our financial education content, retrieved via our partner platform EHBLO.
         </p>
-        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md" role="alert">
-            <p class="font-bold">Coming Soon:</p>
-            <p>Integration with EHBLO for fetching and displaying educational modules. For now, content will be static or admin-managed.</p>
-            <p class="mt-2">Link to external partner: <a href="http://ehblo.com" target="_blank" class="underline hover:text-blue-900">EHBLO.com</a> </p>
+        <div class="bg-blue-100 border-l-4 border-blue-400 p-4 rounded-md shadow-md" role="alert"> {# Maintained light blue theme #}
+            <h4 class="text-xl md:text-2xl font-extrabold text-center text-gradient mb-2">Coming Soon:</h4> {# Gradient text maintained #}
+            <p class="text-blue-700 text-center mb-2">Integration with EHBLO for fetching and displaying educational modules. For now, content will be static or admin-managed.</p> {# Maintained dark blue text #}
+            <p class="mt-2 text-center">Link to external partner: <a href="http://ehblo.com" target="_blank" class="font-bold text-purple-600 hover:text-purple-700 transition duration-200 ease-in-out transform hover:scale-105 inline-block">EHBLO.com</a></p> {# Maintained light purple link with hover #}
         </div>
     </div>
 
     <!-- Promotional Lever for EEUEZ Ecosystem -->
     <div class="card col-span-1 lg:col-span-2 text-center">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Explore the EEUEZ Ecosystem</h3>
+        <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Explore the EEUEZ Ecosystem</h3>
         <p class="text-gray-600 mb-6">
             EEUEZConsulting is your gateway to a wider range of services designed for your success.
         </p>
         <div class="flex flex-col md:flex-row justify-around items-center gap-6">
-            <a href="http://ehblo.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+            <a href="http://ehblo.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                 EHBLO (Education)
             </a>
-            <a href="http://eeuezmarket.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-green-100 hover:bg-green-200 text-green-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+            <a href="http://eeuezmarket.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                 EEUEZmarket (Marketplace)
             </a>
-            <a href="http://eeuezjob.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+            <a href="http://eeuezjob.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                 EEUEZjob (Job Portal)
             </a>
         </div>
     </div>
 
 </div>
+
+{# JSON data for projects, accessible by JavaScript (used for client-side sorting if needed) #}
+{# This should ideally be passed from your Django view context as a JSON-serializable list of dicts #}
+<script id="user-projects-data" type="application/json">
+    {# Example: user_projects might be a list of dicts like: #}
+    {# [{"id": 1, "name": "Project Alpha", "target_amount": 5000, "current_amount": 3000}, ...] #}
+    {{ projects_json_data|json_script:"user-projects-data" }}
+</script>
+
+
+<script>
+    // --- Data Simulation for Charts (Replace with actual Django data) ---
+    const financialData = {
+        daily: {
+            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+            income: [10000, 12000, 8000, 15000, 11000, 13000, 9000],
+            expenses: [3000, 4000, 2500, 5000, 3500, 4500, 3000],
+        },
+        monthly: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            income: [300000, 350000, 280000, 400000, 320000, 380000, 310000],
+            expenses: [100000, 120000, 90000, 150000, 110000, 130000, 105000],
+        },
+        yearly: {
+            labels: ['2022', '2023', '2024', '2025'],
+            income: [3000000, 3800000, 4500000, 5000000],
+            expenses: [1000000, 1300000, 1600000, 1800000],
+        }
+    };
+
+    // Calculate balance for simulated data
+    function calculateBalance(incomeArr, expenseArr) {
+        return incomeArr.map((income, index) => income - expenseArr[index]);
+    }
+
+    financialData.daily.balance = calculateBalance(financialData.daily.income, financialData.daily.expenses);
+    financialData.monthly.balance = calculateBalance(financialData.monthly.income, financialData.monthly.expenses);
+    financialData.yearly.balance = calculateBalance(financialData.yearly.income, financialData.yearly.expenses);
+
+    // --- Chart Rendering Logic ---
+    const chartInstances = {};
+
+    function createOrUpdateChart(timescale, data) {
+        const ctx = document.getElementById(`financialChart${timescale.charAt(0).toUpperCase() + timescale.slice(1)}`).getContext('2d');
+
+        if (chartInstances[timescale]) {
+            chartInstances[timescale].destroy(); // Destroy existing chart instance
+        }
+
+        chartInstances[timescale] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: data.income,
+                        borderColor: '#22c55e', // green-500 for light theme visibility
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)', // green-500 with opacity
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Expenses',
+                        data: data.expenses,
+                        borderColor: '#ef4444', // red-500
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)', // red-500 with opacity
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Balance',
+                        data: data.balance,
+                        borderColor: '#8b5cf6', // purple-500 (matching primary button)
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)', // purple-500 with opacity
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#4b5563' // Dark gray for legend text in light theme
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)' // Light gray grid lines for light theme
+                        },
+                        ticks: {
+                            color: '#4b5563' // Dark gray for x-axis labels in light theme
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)' // Light gray grid lines for light theme
+                        },
+                        ticks: {
+                            color: '#4b5563' // Dark gray for y-axis labels in light theme
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize daily chart on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        createOrUpdateChart('daily', financialData.daily);
+        // Set the initial active tab button
+        document.querySelector('.tab-button[data-timescale="daily"]').classList.add('btn-primary');
+        document.querySelector('.tab-button[data-timescale="daily"]').classList.remove('btn-secondary');
+    });
+
+    // Handle tab switching
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+
+            // Activate clicked button
+            this.classList.remove('btn-secondary');
+            this.classList.add('btn-primary');
+
+            // Hide all canvases
+            document.querySelectorAll('.chart-container canvas').forEach(canvas => {
+                canvas.classList.add('hidden');
+            });
+
+            // Show selected canvas and create/update chart
+            const timescale = this.dataset.timescale;
+            document.getElementById(`financialChart${timescale.charAt(0).toUpperCase() + timescale.slice(1)}`).classList.remove('hidden');
+            createOrUpdateChart(timescale, financialData[timescale]);
+        });
+    });
+
+    // --- Project Completion Logic ---
+
+    // Get current total income and net balance from the DOM
+    // Ensure the element IDs match the IDs in your HTML for income/expense displays
+    let currentTotalIncome = parseFloat(document.getElementById('totalIncomeDisplay').innerText.replace('FCFA', '')) || 0;
+    let currentNetBalance = parseFloat(document.getElementById('netBalanceDisplay').innerText.replace('FCFA', '')) || 0;
+
+    const projectsTableBody = document.querySelector('#projectsTable tbody');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const statusModal = document.getElementById('statusModal');
+    const modalMessage = document.getElementById('modalMessage');
+    const statusMessage = document.getElementById('statusMessage');
+    const confirmButton = document.getElementById('confirmButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const statusOkButton = document.getElementById('statusOkButton');
+
+    let projectToComplete = null; // Store data of the project being confirmed
+
+    // Function to show confirmation modal
+    function showConfirmationModal(message, onConfirm) {
+        modalMessage.innerText = message;
+        confirmationModal.style.display = 'flex'; // Show the modal using flexbox
+
+        confirmButton.onclick = () => {
+            onConfirm(true);
+            confirmationModal.style.display = 'none'; // Hide modal after action
+        };
+        cancelButton.onclick = () => {
+            onConfirm(false);
+            confirmationModal.style.display = 'none'; // Hide modal after action
+        };
+    }
+
+    // Function to show status modal
+    function showStatusModal(message, isSuccess = true) {
+        statusMessage.innerText = message;
+        // Adjust text color based on success/error for light theme
+        if (isSuccess) {
+            statusMessage.classList.remove('text-red-500');
+            statusMessage.classList.add('text-green-700'); // Darker green for light background
+        } else {
+            statusMessage.classList.remove('text-green-700');
+            statusMessage.classList.add('text-red-700'); // Darker red for light background
+        }
+        statusModal.style.display = 'flex'; // Show the modal using flexbox
+
+        statusOkButton.onclick = () => {
+            statusModal.style.display = 'none'; // Hide modal after action
+        };
+    }
+
+    // Event listener for 'Complete' buttons on the projects table
+    projectsTableBody.addEventListener('click', function(event) {
+        if (event.target.classList.contains('complete-project-btn')) {
+            const row = event.target.closest('.project-row');
+            if (!row) return; // Ensure a row was found
+
+            const projectName = row.dataset.projectName;
+            const projectAmount = parseFloat(row.dataset.projectAmount);
+
+            if (isNaN(projectAmount)) {
+                console.error("Invalid project amount:", row.dataset.projectAmount);
+                showStatusModal(`Error: Could not get valid amount for project "${projectName}".`, false);
+                return;
+            }
+
+            projectToComplete = {
+                row: row,
+                name: projectName,
+                amount: projectAmount
+            };
+
+            showConfirmationModal(`Are you sure you want to mark "${projectName}" as complete and add FCFA${projectAmount.toFixed(2)} to income?`, (confirmed) => {
+                if (confirmed) {
+                    // Simulate income increment
+                    currentTotalIncome += projectToComplete.amount;
+                    currentNetBalance += projectToComplete.amount;
+
+                    // Update DOM for income and balance
+                    document.getElementById('totalIncomeDisplay').innerText = `FCFA${currentTotalIncome.toFixed(2)}`;
+                    document.getElementById('netBalanceDisplay').innerText = `FCFA${currentNetBalance.toFixed(2)}`;
+
+                    // Update net balance color based on new value (assuming text-blue-600 for positive, text-red-600 for negative)
+                    const netBalanceElement = document.getElementById('netBalanceDisplay');
+                    if (currentNetBalance >= 0) {
+                        netBalanceElement.classList.remove('text-red-600');
+                        netBalanceElement.classList.add('text-blue-600');
+                    } else {
+                        netBalanceElement.classList.remove('text-blue-600');
+                        netBalanceElement.classList.add('text-red-600');
+                    }
+
+                    // Remove project row from table
+                    projectToComplete.row.remove();
+
+                    // --- Real-world Django Integration Placeholder ---
+                    // In a real application, you would send an AJAX request here:
+                    /*
+                    const projectId = projectToComplete.row.dataset.projectId;
+                    fetch(`/complete-project/${projectId}/`, { // Your Django URL for completing project
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}' // Important for Django. Make sure this is correctly passed if needed.
+                        },
+                        body: JSON.stringify({
+                            amount: projectToComplete.amount
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showStatusModal(`"${projectToComplete.name}" completed successfully! Income updated.`, true);
+                            // Optionally, update charts or other dynamic elements here if data is returned from backend
+                        } else {
+                            showStatusModal(`Error completing "${projectToComplete.name}": ${data.error || 'Unknown error'}`, false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        showStatusModal(`An unexpected error occurred while completing "${projectToComplete.name}". Please check console.`, false);
+                    });
+                    */
+                    // For this demo, we'll just show a client-side success message
+                    showStatusModal(`"${projectToComplete.name}" completed successfully! Income updated.`, true);
+
+                } else {
+                    showStatusModal(`Completion of "${projectToComplete.name}" cancelled.`, false);
+                }
+                projectToComplete = null; // Clear the stored project
+            });
+        }
+    });
+
+</script>
 {% endblock %}

@@ -1,16 +1,27 @@
 <!-- eeuezconsulting_app/templates/base.html -->
+{% load static %} {# This line is essential for using static files #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EEUEZConsulting - {% block title %}{% endblock %}</title>
+
+    {# Favicon #}
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon/EEUEZ.jpeg' %}"> {# Adjust type if using .png #}
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for user icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlalHtsk9f20o1tT7R0xLhXj8tKz8k3hQ8c3n8a6Q42a9jA4/Cg/1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chart.js CDN for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Light gray background */
+            color: #374151; /* Default text color for light theme (gray-700) */
         }
         .header-bg {
             background: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
@@ -27,38 +38,184 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
             padding: 1.5rem; /* p-6 */
         }
+
+        /* Standard Button Styles (Direct CSS for CDN compatibility) */
         .btn-primary {
-            @apply inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem; /* px-6 py-3 */
+            border: 1px solid transparent;
+            font-size: 1rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            color: #ffffff;
+            background-color: #8b5cf6; /* bg-purple-600 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+        .btn-primary:hover {
+            background-color: #7c3aed; /* hover:bg-purple-700 */
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(152, 129, 206, 0.5), 0 0 0 6px rgba(139, 92, 246, 0.2); /* focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 */
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
         .btn-secondary {
-            @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            border-radius: 0.375rem; /* rounded-md */
+            color: #4b5563; /* text-gray-700 */
+            background-color: #ffffff; /* bg-white */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+        .btn-secondary:hover {
+            background-color: #f9fafb; /* hover:bg-gray-50 */
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn-secondary:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5), 0 0 0 6px rgba(99, 102, 241, 0.2); /* focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 */
+        }
+        .btn-secondary:active {
+            transform: scale(0.95);
+        }
+
         .btn-danger {
-            @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border: 1px solid transparent;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            color: #ffffff;
+            background-color: #ef4444; /* bg-red-600 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+        .btn-danger:hover {
+            background-color: #dc2626; /* hover:bg-red-700 */
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-danger:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5), 0 0 0 6px rgba(239, 68, 68, 0.2); /* focus:ring-2 focus:ring-offset-2 focus:ring-red-500 */
+        }
+        .btn-danger:active {
+            transform: scale(0.95);
+        }
+
+        /* Specific style for Navbar links */
+        .nav-link-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem; /* px-3 py-2 */
+            border: 1px solid transparent; /* No visible border initially */
+            font-size: 0.95rem; /* Slightly larger text for nav */
+            font-weight: 500; /* font-medium */
+            border-radius: 0.375rem; /* rounded-md */
+            color: #ffffff; /* text-white */
+            background-color: transparent; /* Initially transparent */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .nav-link-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15); /* Subtle white background on hover */
+            transform: scale(1.05); /* Pop-out effect */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow on hover */
+        }
+        .nav-link-btn:active {
+            transform: scale(0.95);
+        }
+        /* Override for 'Hello, User!' part to make it slightly padded/clickable area */
+        .user-greeting-item {
+            padding: 0.5rem 0.75rem; /* Match nav-link-btn padding */
+            border-radius: 0.375rem; /* Match nav-link-btn border-radius */
+        }
+
+        /* Custom Modal Styles (for 'Complete' button confirmation) */
+        .modal {
+            display: none; /* IMPORTANT: Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            align-items: center; /* Center content vertically */
+            justify-content: center; /* Center content horizontally */
+        }
+
+        .modal-content {
+            background-color: #ffffff; /* Light background for modal */
+            margin: auto;
+            padding: 2.5rem; /* Increased padding */
+            border: 1px solid #d1d5db; /* Light border */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%; /* Responsive width */
+            max-width: 500px; /* Max width */
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+            color: #374151; /* Default text color for modal content */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem; /* Increased margin */
+        }
+        /* Message color adjustments within modal for light theme */
+        .modal-content .text-green-700 { color: #047857; } /* Darker green for success */
+        .modal-content .text-red-700 { color: #b91c1c; } /* Darker red for error */
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
     <header class="header-bg text-white py-4 shadow-lg">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold mb-3 md:mb-0">
+            <h1 class="text-3xl font-bold mb-3 md:mb-0 flex items-center space-x-3">
+                {# Logo Image #}
+                <img src="{% static 'img/EEUEZ.jpeg' %}" alt="EEUEZConsulting Logo" class="h-10 w-auto rounded-md object-contain"> {# Adjust height and width as needed #}
                 <a href="{% url 'dashboard' %}" class="hover:text-gray-200">EEUEZConsulting</a>
             </h1>
-            <nav class="w-full md:w-auto">
-                <ul class="flex flex-wrap justify-center md:justify-end items-center space-x-4 md:space-x-6">
+            <nav class="w-full md:w-auto mt-4 md:mt-0">
+                <ul class="flex flex-col md:flex-row justify-center md:justify-end items-center space-y-2 md:space-y-0 md:space-x-6">
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'dashboard' %}" class="hover:underline font-medium">Dashboard</a></li>
-                        <li><a href="{% url 'income_list' %}" class="hover:underline font-medium">Income</a></li>
-                        <li><a href="{% url 'expense_list' %}" class="hover:underline font-medium">Expenses</a></li>
-                        <li><a href="{% url 'project_list' %}" class="hover:underline font-medium">Projects</a></li>
-                        <li><a href="{% url 'education_modules_list' %}" class="hover:underline font-medium">Education</a></li>
-                        <li><a href="{% url 'recommendations_list' %}" class="hover:underline font-medium">Recommendations</a></li>
-                        <li class="font-medium">Hello, {{ user.username }}!</li>
-                        <li><a href="{% url 'logout' %}" class="hover:underline font-medium">Logout</a></li>
+                        <li><a href="{% url 'dashboard' %}" class="nav-link-btn">Dashboard</a></li>
+                        <li><a href="{% url 'income_list' %}" class="nav-link-btn">Income</a></li>
+                        <li><a href="{% url 'expense_list' %}" class="nav-link-btn">Expenses</a></li>
+                        <li><a href="{% url 'project_list' %}" class="nav-link-btn">Projects</a></li>
+                        <li><a href="{% url 'education_modules_list' %}" class="nav-link-btn">Education</a></li>
+                        <li><a href="{% url 'recommendations_list' %}" class="nav-link-btn">Recommendations</a></li>
+                        <li class="flex items-center space-x-2 font-semibold text-lg text-purple-200 user-greeting-item">
+                            <!-- Always display a default user icon -->
+                            <i class="fa-solid fa-circle-user fa-xl"></i>
+                            <span>Hello, {{ user.username }}!</span>
+                        </li>
+                        <li><a href="{% url 'logout' %}" class="nav-link-btn">Logout</a></li>
                     {% else %}
-                        <li><a href="{% url 'login' %}" class="hover:underline font-medium">Login</a></li>
-                        <li><a href="{% url 'register' %}" class="hover:underline font-medium">Register</a></li>
+                        <li><a href="{% url 'login' %}" class="nav-link-btn">Login</a></li>
+                        <li><a href="{% url 'register' %}" class="nav-link-btn">Register</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -76,6 +233,27 @@
         {% endif %}
     </div>
 
+    <!-- Custom Modal for Confirmation -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessage" class="text-xl mb-4"></p>
+            <div class="modal-buttons">
+                <button id="confirmButton" class="btn-primary">Confirm</button>
+                <button id="cancelButton" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Custom Modal for Success/Error -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <p id="statusMessage" class="text-xl mb-4"></p>
+            <div class="modal-buttons">
+                <button id="statusOkButton" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Main Content Block -->
     <main class="flex-grow container mx-auto px-4 py-8">
         {% block content %}
@@ -87,7 +265,7 @@
         <div class="container mx-auto px-4 text-center">
             <p>&copy; 2025 EEUEZConsulting. All rights reserved.</p>
             <p class="text-sm mt-2">Financial support for individuals and families.</p>
-            <div class="flex justify-center space-x-6 mt-4">
+            <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-6 mt-4">
                 <a href="http://ehblo.com" target="_blank" class="text-purple-300 hover:text-purple-100 text-sm">EHBLO</a>
                 <a href="http://eeuezmarket.com" target="_blank" class="text-green-300 hover:text-green-100 text-sm">EEUEZmarket</a>
                 <a href="http://eeuezjob.com" target="_blank" class="text-indigo-300 hover:text-indigo-100 text-sm">EEUEZjob</a>
