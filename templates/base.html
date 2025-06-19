@@ -1,0 +1,98 @@
+<!-- eeuezconsulting_app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEUEZConsulting - {% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .header-bg {
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text; /* Added for compatibility */
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+            padding: 1.5rem; /* p-6 */
+        }
+        .btn-primary {
+            @apply inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out;
+        }
+        .btn-secondary {
+            @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out;
+        }
+        .btn-danger {
+            @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="header-bg text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-3xl font-bold mb-3 md:mb-0">
+                <a href="{% url 'dashboard' %}" class="hover:text-gray-200">EEUEZConsulting</a>
+            </h1>
+            <nav class="w-full md:w-auto">
+                <ul class="flex flex-wrap justify-center md:justify-end items-center space-x-4 md:space-x-6">
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'dashboard' %}" class="hover:underline font-medium">Dashboard</a></li>
+                        <li><a href="{% url 'income_list' %}" class="hover:underline font-medium">Income</a></li>
+                        <li><a href="{% url 'expense_list' %}" class="hover:underline font-medium">Expenses</a></li>
+                        <li><a href="{% url 'project_list' %}" class="hover:underline font-medium">Projects</a></li>
+                        <li><a href="{% url 'education_modules_list' %}" class="hover:underline font-medium">Education</a></li>
+                        <li><a href="{% url 'recommendations_list' %}" class="hover:underline font-medium">Recommendations</a></li>
+                        <li class="font-medium">Hello, {{ user.username }}!</li>
+                        <li><a href="{% url 'logout' %}" class="hover:underline font-medium">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="hover:underline font-medium">Login</a></li>
+                        <li><a href="{% url 'register' %}" class="hover:underline font-medium">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Messages Section -->
+    <div class="container mx-auto px-4 mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-3 rounded-md {% if message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'info' %}bg-blue-100 border-blue-400 text-blue-700{% elif message.tags == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %} border" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 EEUEZConsulting. All rights reserved.</p>
+            <p class="text-sm mt-2">Financial support for individuals and families.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <a href="http://ehblo.com" target="_blank" class="text-purple-300 hover:text-purple-100 text-sm">EHBLO</a>
+                <a href="http://eeuezmarket.com" target="_blank" class="text-green-300 hover:text-green-100 text-sm">EEUEZmarket</a>
+                <a href="http://eeuezjob.com" target="_blank" class="text-indigo-300 hover:text-indigo-100 text-sm">EEUEZjob</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

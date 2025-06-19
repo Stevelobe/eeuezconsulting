@@ -1,0 +1,54 @@
+<!-- eeuezconsulting_app/financial_app/templates/financial_app/project_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-extrabold text-gray-900 mb-8 text-center text-gradient">{{ title }}</h2>
+
+<div class="card mb-6">
+    <div class="flex justify-end mb-4">
+        <a href="{% url 'add_project' %}" class="btn-primary">Add New Project</a>
+    </div>
+
+    {% if projects %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded-lg shadow-sm divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tl-lg">Project Name</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Target</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Current</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Due Date</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Completed</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tr-lg">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for project in projects %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-4 whitespace-nowrap text-gray-800 font-medium">{{ project.name }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-blue-600">${{ project.target_amount|floatformat:2|default:"N/A" }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-green-600">${{ project.current_amount|floatformat:2 }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-gray-600">{{ project.due_date|date:"M d, Y"|default:"N/A" }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-gray-800">
+                                {% if project.is_completed %}
+                                    <span class="text-green-500 font-semibold">Yes</span>
+                                {% else %}
+                                    <span class="text-red-500 font-semibold">No</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 whitespace-nowrap text-sm">
+                                <a href="{% url 'edit_project' project.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                                <a href="{% url 'delete_project' project.pk %}" class="text-red-600 hover:text-red-900">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-gray-500 text-center py-8">You haven't created any projects yet. <a href="{% url 'add_project' %}" class="text-purple-600 hover:underline">Start a new financial project!</a></p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+bin/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage/
+*.mo
+*.pot
+
+# Django specific
+*.log
+*.sqlite3
+media/ # If you set up media files, they can get large. You might want to ignore them.
+static_cdn/ # If you collect static files here, ignore it.
+my_project_folder/settings_local.py # If you use local settings overrides
+
+# VSCode
+.vscode/
+
+# IDEs (e.g., PyCharm)
+.idea/
+*.iml
+.DS_Store
+
+# Operating System Files
+.DS_Store
+.Trash-*
+ehthumbs.db
+Thumbs.db
+
+# Virtual Environment Directory (if named differently)
+# If your virtual environment is named 'myenv', uncomment/add:
+# myenv/

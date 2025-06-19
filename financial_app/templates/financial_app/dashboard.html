@@ -1,0 +1,172 @@
+<!-- eeuezconsulting_app/financial_app/templates/financial_app/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-extrabold text-gray-900 mb-8 text-center text-gradient">Your Financial Overview</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="card text-center">
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Total Income</h3>
+        <p class="text-4xl font-bold text-green-600">FCFA{{ total_income|floatformat:2 }}</p>
+    </div>
+    <div class="card text-center">
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Total Expenses</h3>
+        <p class="text-4xl font-bold text-red-600">FCFA{{ total_expense|floatformat:2 }}</p>
+    </div>
+    <div class="card text-center">
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Net Balance</h3>
+        <p class="text-4xl font-bold {% if net_balance >= 0 %}text-blue-600{% else %}text-red-600{% endif %}">FCFA{{ net_balance|floatformat:2 }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Incomes Card -->
+    <div class="card">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Recent Incomes
+            <a href="{% url 'add_income' %}" class="btn-primary py-2 px-4 text-sm">Add Income</a>
+        </h3>
+        {% if user_incomes %}
+            <ul class="space-y-3">
+                {% for income in user_incomes %}
+                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-200">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-700">{{ income.source }}</p>
+                            <p class="text-sm text-gray-500">{{ income.date|date:"M d, Y" }}</p>
+                        </div>
+                        <span class="text-green-600 font-bold">FCFA{{ income.amount|floatformat:2 }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="mt-4 text-right">
+                <a href="{% url 'income_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Incomes &rarr;</a>
+            </div>
+        {% else %}
+            <p class="text-gray-500">No recent incomes recorded. <a href="{% url 'add_income' %}" class="text-purple-600 hover:underline">Add one now!</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Expenses Card -->
+    <div class="card">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Recent Expenses
+            <a href="{% url 'add_expense' %}" class="btn-primary py-2 px-4 text-sm">Add Expense</a>
+        </h3>
+        {% if user_expenses %}
+            <ul class="space-y-3">
+                {% for expense in user_expenses %}
+                    <li class="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-200">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-700">{{ expense.category }}</p>
+                            <p class="text-sm text-gray-500">{{ expense.date|date:"M d, Y" }}</p>
+                        </div>
+                        <span class="text-red-600 font-bold">FCFA{{ expense.amount|floatformat:2 }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="mt-4 text-right">
+                <a href="{% url 'expense_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Expenses &rarr;</a>
+            </div>
+        {% else %}
+            <p class="text-gray-500">No recent expenses recorded. <a href="{% url 'add_expense' %}" class="text-purple-600 hover:underline">Add one now!</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Upcoming Projects Card -->
+    <div class="card col-span-1 lg:col-span-2">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Your Projects
+            <a href="{% url 'add_project' %}" class="btn-primary py-2 px-4 text-sm">Add Project</a>
+        </h3>
+        {% if user_projects %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tl-lg">Project Name</th>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Due Date</th>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Target Amount</th>
+                            <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider rounded-tr-lg">Current Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for project in user_projects %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-3 px-4 whitespace-nowrap text-gray-800 font-medium">{{ project.name }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">{{ project.due_date|default:"N/A"|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">FCFA{{ project.target_amount|floatformat:2|default:"N/A" }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap text-gray-600">FCFA{{ project.current_amount|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 text-right">
+                <a href="{% url 'project_list' %}" class="text-purple-600 hover:underline font-medium text-sm">View All Projects &rarr;</a>
+            </div>
+        {% else %}
+            <p class="text-gray-500">No upcoming projects. <a href="{% url 'add_project' %}" class="text-purple-600 hover:underline">Start a new project!</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Recommendations Card -->
+    <div class="card col-span-1 lg:col-span-2">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Latest Recommendations
+            <a href="{% url 'recommendations_list' %}" class="btn-primary py-2 px-4 text-sm">View All</a>
+        </h3>
+        {% if user_recommendations %}
+            <ul class="space-y-4">
+                {% for rec in user_recommendations %}
+                    <li class="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-1">{{ rec.title }}</h4>
+                        <p class="text-gray-600 text-sm mb-2">{{ rec.content|truncatechars:150 }}</p>
+                        <p class="text-xs text-gray-500">Issued: {{ rec.date_created|date:"M d, Y" }}</p>
+                        <a href="{% url 'recommendations_list' %}" class="text-blue-600 hover:underline text-sm mt-2 inline-block">Read More</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-500">No new recommendations at the moment. Good job!</p>
+        {% endif %}
+    </div>
+
+    <!-- Financial Education Modules Card -->
+    <div class="card col-span-1 lg:col-span-2">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 flex justify-between items-center">
+            Financial Education Modules
+            <a href="{% url 'education_modules_list' %}" class="btn-primary py-2 px-4 text-sm">View All</a>
+        </h3>
+        <p class="text-gray-600 mb-4">
+            Explore our financial education content, retrieved via our partner platform EHBLO.
+        </p>
+        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md" role="alert">
+            <p class="font-bold">Coming Soon:</p>
+            <p>Integration with EHBLO for fetching and displaying educational modules. For now, content will be static or admin-managed.</p>
+            <p class="mt-2">Link to external partner: <a href="http://ehblo.com" target="_blank" class="underline hover:text-blue-900">EHBLO.com</a> </p>
+        </div>
+    </div>
+
+    <!-- Promotional Lever for EEUEZ Ecosystem -->
+    <div class="card col-span-1 lg:col-span-2 text-center">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Explore the EEUEZ Ecosystem</h3>
+        <p class="text-gray-600 mb-6">
+            EEUEZConsulting is your gateway to a wider range of services designed for your success.
+        </p>
+        <div class="flex flex-col md:flex-row justify-around items-center gap-6">
+            <a href="http://ehblo.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                EHBLO (Education)
+            </a>
+            <a href="http://eeuezmarket.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-green-100 hover:bg-green-200 text-green-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                EEUEZmarket (Marketplace)
+            </a>
+            <a href="http://eeuezjob.com" target="_blank" class="block w-full md:w-1/3 p-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                EEUEZjob (Job Portal)
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
