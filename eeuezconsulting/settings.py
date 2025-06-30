@@ -10,9 +10,9 @@ SECRET_KEY = 'your-super-secret-key-for-production-change-this-now-and-make-it-l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True # Set to False in production
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '215e-129-0-226-253.ngrok-free.app', 'eeuez.onrender.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
 
-CSRF_TRUSTED_ORIGINS = ['https://215e-129-0-226-253.ngrok-free.app', 'https://eeuez.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
 
 # Application definition
 
