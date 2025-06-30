@@ -10,8 +10,10 @@ SECRET_KEY = 'BRAYAND_NEW_SECRET_KEY_FOR_EEUZCONSULTING'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False # Set to False in production
 
-ALLOWED_HOSTS = ['eeuezconsulting.onrender.com'] # Add your domain names here in production, e.g., ['www.yourdomain.com']
 
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
+
+CSRF_TRUSTED_ORIGINS = ['https://215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
 # Application definition
 
 INSTALLED_APPS = [

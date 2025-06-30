@@ -28,8 +28,8 @@
                     {% for project in projects %}
                         <tr class="hover:bg-gray-50">
                             <td class="py-3 px-4 whitespace-nowrap text-gray-800 font-medium">{{ project.name }}</td>
-                            <td class="py-3 px-4 whitespace-nowrap text-blue-600">${{ project.target_amount|floatformat:2|default:"N/A" }}</td>
-                            <td class="py-3 px-4 whitespace-nowrap text-green-600">${{ project.current_amount|floatformat:2 }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-blue-600">FCFA{{ project.target_amount|floatformat:2|default:"N/A" }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap text-green-600">FCFA{{ project.current_amount|floatformat:2 }}</td>
                             <td class="py-3 px-4 whitespace-nowrap text-gray-600">{{ project.due_date|date:"M d, Y"|default:"N/A" }}</td>
                             <td class="py-3 px-4 whitespace-nowrap text-gray-800">
                                 {% if project.is_completed %}

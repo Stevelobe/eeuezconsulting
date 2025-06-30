@@ -29,6 +29,7 @@ urlpatterns = [
     path('projects/add/', views.add_project, name='add_project'),
     path('projects/edit/<int:pk>/', views.edit_project, name='edit_project'),
     path('projects/delete/<int:pk>/', views.delete_project, name='delete_project'),
+    path('complete-project/', views.complete_project, name='complete_project'), # NEW: URL for completing projects via AJAX
 
     # Recommendations & Education
     path('recommendations/', views.recommendations_list, name='recommendations_list'),
