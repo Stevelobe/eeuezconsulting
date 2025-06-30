@@ -1,19 +1,19 @@
 # eeuezconsulting_app/eeuezconsulting/settings.py
 
 import os
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # !!! IMPORTANT: Change this in production. Keep it secret!
-SECRET_KEY = 'your-super-secret-key-for-production-change-this-now-and-make-it-long-and-random!'
+SECRET_KEY = 'BRAYAND_NEW_SECRET_KEY_FOR_EEUZCONSULTING'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True # Set to False in production
+DEBUG = False # Set to False in production
+
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = ['https://215e-129-0-226-253.ngrok-free.app','eeuezconsulting.onrender.com']
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -34,6 +34,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'eeuezconsulting.urls'
@@ -107,9 +108,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'), # Where Django will look for static files
+    BASE_DIR / "static",
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Where 'collectstatic' will gather files in production
+STATIC_ROOT = BASE_DIR / "staticfiles" # Where 'collectstatic' will gather files in production
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
